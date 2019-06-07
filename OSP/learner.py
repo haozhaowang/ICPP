@@ -37,7 +37,7 @@ parser.add_argument('--save-path', type=str, default='./')
 # 参数信息
 parser.add_argument('--epochs', type=int, default=2)
 parser.add_argument('--train-bsz', type=int, default=200)
-parser.add_argument('--stale-threshold', type=int, default=100)
+parser.add_argument('--stale-threshold', type=int, default=20)
 
 args = parser.parse_args()
 
