@@ -18,19 +18,19 @@ from torchvision import datasets, models, transforms
 import ResNetOnCifar10
 
 parser = argparse.ArgumentParser()
-# 集群信息
+# Information of the cluster
 parser.add_argument('--ps-ip', type=str, default='127.0.0.1')
 parser.add_argument('--ps-port', type=str, default='29500')
 parser.add_argument('--this-rank', type=int, default=1)
 parser.add_argument('--workers-num', type=int, default=2)
 
-# 模型与数据集
+# Models and Dataset
 parser.add_argument('--data-dir', type=str, default='~/dataset')
 parser.add_argument('--data-name', type=str, default='cifar10')
 parser.add_argument('--model', type=str, default='MnistCNN')
 parser.add_argument('--save-path', type=str, default='./')
 
-# 参数信息
+# Hyperparameters for the algorithm
 parser.add_argument('--epochs', type=int, default=100)
 parser.add_argument('--lr', type=float, default=0.1)
 parser.add_argument('--train-bsz', type=int, default=200)
@@ -41,7 +41,7 @@ args = parser.parse_args()
 
 # noinspection PyTypeChecker
 def run(rank, workers, model, save_path, train_data, test_data):
-    # 获取ps端传来的模型初始参数
+    # Get the initial model from the server
     _group = [w for w in workers].append(0)
     group = dist.new_group(_group)
 
@@ -77,7 +77,7 @@ def run(rank, workers, model, save_path, train_data, test_data):
         s_time = time.time()
         model.train()
 
-        # AlexNet在指定epoch减少学习率LR
+        # Reduce the learning rate LR in some specific epochs
         #if args.model == 'AlexNet':
         if (epoch+1) % decay_period == 0:
             for param_group in optimizer.param_groups:
@@ -95,7 +95,7 @@ def run(rank, workers, model, save_path, train_data, test_data):
             delta_ws = optimizer.get_delta_w()
 
             batch_comp_time = time.time()
-            # 同步操作
+            # Synchronization
             # send epoch train loss firstly
             dist.gather(loss.data, dst = 0, group = group)
             for idx, param in enumerate(model.parameters()):
@@ -121,7 +121,7 @@ def run(rank, workers, model, save_path, train_data, test_data):
         e_time = time.time()
         #epoch_train_loss /= len(train_data)
         #epoch_train_loss = format(epoch_train_loss, '.4f')
-        # 训练结束后进行test
+        # test the model
         #test_loss, acc = test_model(rank, model, test_data, criterion=criterion)
         acc = 0.0
         batch_interval /= batch_idx
@@ -229,7 +229,7 @@ if __name__ == '__main__':
     train_data = select_dataset(workers, this_rank, train_data, batch_size=train_bsz)
     test_data = select_dataset(workers, this_rank, test_data, batch_size=test_bsz)
 
-    # 用所有的测试数据测试
+    # Initialize the test dataset
     #test_data = DataLoader(test_dataset, batch_size=test_bsz, shuffle=True)
 
     world_size = len(workers) + 1
