@@ -1,7 +1,7 @@
 # Meta Information of the Code
 (1) ICPPAppendix is the full proof for ICPP 2019. 
 
->Wang, Haozhao, Song Guo, and Ruixuan Li. "Osp: Overlapping computation and communication in parameter server for fast machine learning." Proceedings of the 48th International Conference on Parallel Processing. 2019.
+>Haozhao Wang, Song Guo, and Ruixuan Li. "OSP: Overlapping computation and communication in parameter server for fast machine learning." Proceedings of the 48th International Conference on Parallel Processing. 2019.
 
 (2) The four file folders are the source codes for OSP and its comparison models.
 
