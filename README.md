@@ -16,7 +16,6 @@ The program is based on PyTorch 1 and Python 3.
 
 >python param_server.py
 >>--ps-ip
-
 >>--ps-port
 
 >>--this-rank=0
