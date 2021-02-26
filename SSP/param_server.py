@@ -20,17 +20,17 @@ from torchvision import datasets, models, transforms
 import ResNetOnCifar10
 
 parser = argparse.ArgumentParser()
-# 集群信息
+# Information of the cluster
 parser.add_argument('--ps-ip', type=str, default='127.0.0.1')
 parser.add_argument('--ps-port', type=str, default='29500')
 parser.add_argument('--this-rank', type=int, default=0)
 parser.add_argument('--workers-num', type=int, default=2)
 
-# 模型与数据集
+# Model and Dataset
 parser.add_argument('--data-dir', type=str, default='~/dataset')
 parser.add_argument('--model', type=str, default='MnistCNN')
 
-# 参数信息
+# Hyper-parameters
 parser.add_argument('--timeout', type=float, default=10000000.0)
 parser.add_argument('--epochs', type=int, default=1)
 parser.add_argument('--train-bsz', type=int, default=200)
@@ -45,7 +45,7 @@ def run(model, test_data, queue, param_q, stop_signal, train_pics):
     else:
         criterion = torch.nn.NLLLoss()
 
-    # 参数中的tensor转成numpy
+    # Transform tensor to numpy
     tmp = map(lambda item: (item[0], item[1].numpy()), model.state_dict().items())
     _tmp = OrderedDict(tmp)
     workers = [v+1 for v in range(args.workers_num)]
@@ -132,7 +132,7 @@ def run(model, test_data, queue, param_q, stop_signal, train_pics):
             if not outOfStale:
                 for i in range(len(stale_stack)):
                     rank_wait = stale_stack.pop()
-                    # 相应learner下次更新的staleness
+                    # update the value of staleness in the corresponding learner
                     learner_staleness[rank_wait] = staleness
                     for idx, param in enumerate(model.parameters()):
                         dist.send(tensor=param.data, dst=rank_wait)
@@ -203,8 +203,6 @@ def init_processes(rank, size, model, test_data, queue, param_q, stop_signal, tr
 
 
 if __name__ == "__main__":
-
-    # 随机数设置
     manual_seed = 1
     random.seed(manual_seed)
     torch.manual_seed(manual_seed)
@@ -275,9 +273,9 @@ if __name__ == "__main__":
     manager = MyManager(address=(args.ps_ip, 5000), authkey=b'queue')
     manager.start()
 
-    q = manager.get_queue()  # 参数更新使用的队列
-    param_q = manager.get_param()  # 开始时传模型参数使用的队列
-    stop_signal = manager.get_stop_signal()  # 传停止信号使用的队列
+    q = manager.get_queue()  # Queue receiving the models
+    param_q = manager.get_param()  # Queue receiving the initial models
+    stop_signal = manager.get_stop_signal()  # Queue receiving the stop signal
 
     p = TorchProcess(target=init_processes, args=(this_rank, world_size, model,test_data,
                                                   q, param_q, stop_signal, train_pics, run))
