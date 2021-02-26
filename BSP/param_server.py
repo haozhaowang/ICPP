@@ -17,18 +17,18 @@ from torchvision import datasets, models, transforms
 import ResNetOnCifar10
 
 parser = argparse.ArgumentParser()
-# 集群信息
+# Information of Cluster
 parser.add_argument('--ps-ip', type=str, default='127.0.0.1')
 parser.add_argument('--ps-port', type=str, default='29500')
 parser.add_argument('--this-rank', type=int, default=0)
 parser.add_argument('--workers-num', type=int, default=2)
 
-# 模型与数据集
+# Model and Dataset
 parser.add_argument('--data-dir', type=str, default='~/dataset')
 parser.add_argument('--data-name', type=str, default='cifar10')
 parser.add_argument('--model', type=str, default='MnistCNN')
 
-# 参数信息
+# Hyper-parameters
 parser.add_argument('--epochs', type=int, default=100)
 parser.add_argument('--momentum', type=float, default=0.99)
 parser.add_argument('--train-bsz', type=int, default=200)
@@ -71,7 +71,6 @@ def run(rank, model, train_pics, train_bsz):
             param_idx = 0
             for param in model.parameters():
                 tensor = torch.zeros_like(param.data)
-                # FIXME FIXED：gather_list中的每个Tensor都必须是新的对象，否则会出问题
                 gather_list = [torch.zeros_like(param.data) for _ in range(len(workers) + 1)]
                 dist.gather(tensor=tensor, gather_list=gather_list, group=group)
                 tensor = sum(gather_list) / len(workers)
@@ -131,7 +130,7 @@ def init_processes(rank, size,
 
 
 if __name__ == '__main__':
-    # 随机数设置
+    # Random seed
     manual_seed = 1
     random.seed(manual_seed)
     torch.manual_seed(manual_seed)
