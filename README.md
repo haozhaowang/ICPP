@@ -12,7 +12,8 @@ The program is based on PyTorch 1 and Python 3.
 
 (2) Start orders
 
-(a) >python param_server.py
+(a) 
+>python param_server.py
 
      >      --ps-ip
 
@@ -23,7 +24,8 @@ The program is based on PyTorch 1 and Python 3.
          >  --model
           > --epochs
            >--train-bsz
-(b) >python learner.py 
+(b) 
+     > python learner.py 
      >      --ps-ip 
       >     --ps-port
        >    --this-rank
