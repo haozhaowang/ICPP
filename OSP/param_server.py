@@ -21,18 +21,18 @@ from torchvision import datasets, models, transforms
 import ResNetOnCifar10
 
 parser = argparse.ArgumentParser()
-# 集群信息
+# Information of the cluster
 parser.add_argument('--ps-ip', type=str, default='127.0.0.1')
 parser.add_argument('--ps-port', type=str, default='29500')
 parser.add_argument('--this-rank', type=int, default=0)
 parser.add_argument('--workers-num', type=int, default=2)
 
-# 模型与数据集
+# Model and Dataset
 parser.add_argument('--data-dir', type=str, default='~/data')
 parser.add_argument('--data-name', type=str, default='cifar10')
 parser.add_argument('--model', type=str, default='MnistCNN')
 
-# 参数信息
+# Hyper-parameters
 parser.add_argument('--epochs', type=int, default=2)
 parser.add_argument('--momentum', type=float, default=0.99)
 parser.add_argument('--train-bsz', type=int, default=200)
@@ -108,7 +108,6 @@ def run(rank, model, train_pics, train_bsz, g_lr):
             # receive global update from each worker
             for update_idx, param in enumerate(model.parameters()):
                 tensor = torch.zeros_like(param.data)
-                # FIXME FIXED：gather_list中的每个Tensor都必须是新的对象，否则会出问题
                 gather_list = [torch.zeros_like(param.data) for _ in range(len(workers) + 1)]
                 dist.gather(tensor=tensor, gather_list=gather_list, group=group)
                 # here we only use average temperally for simplicity
@@ -121,7 +120,7 @@ def run(rank, model, train_pics, train_bsz, g_lr):
 
             global_clock += 1
             epoch_clock += 1
-            # AlexNet在指定epoch减少学习率LR
+            # Decay the learning at the specific epoch
             # not update intra the epoch
             temp_epoch = int(total_iteration_time / iteration_times_epoch) + 1
             if temp_epoch > real_epoch:
@@ -153,7 +152,7 @@ def run(rank, model, train_pics, train_bsz, g_lr):
                 batch_comm_interval = sum(batch_comm_interval) / len(workers)
 
                 f_trainloss.write(str(args.this_rank) +
-                                  "\t" + str(epoch_train_loss / float(epoch_clock)) +         ###### This place has problem.
+                                  "\t" + str(epoch_train_loss / float(epoch_clock)) +
                                   "\t" + str(0) +
                                   "\t" + str(e_epoch_time - epoch_time) +
                                   "\t" + str(e_epoch_time - s_time) +
@@ -185,7 +184,6 @@ def init_processes(rank, size,
 
 
 if __name__ == '__main__':
-    # 随机数设置
     manual_seed = 1
     random.seed(manual_seed)
     torch.manual_seed(manual_seed)
