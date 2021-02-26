@@ -14,12 +14,9 @@ The program is based on PyTorch 1 and Python 3.
 
 (a) 
 >python param_server.py
-
-     >      --ps-ip
-
-     >     --ps-port
-
-     >   --this-rank=0
+>>      --ps-ip
+>>     --ps-port
+>>   --this-rank=0
         >   --workers-num
          >  --model
           > --epochs
