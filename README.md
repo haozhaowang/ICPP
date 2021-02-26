@@ -12,25 +12,42 @@ The program is based on PyTorch 1 and Python 3.
 
 (2) Start orders
 
-(a) 
+(a) Start Server
+
 >python param_server.py
 >>--ps-ip
+
 >>--ps-port
+
 >>--this-rank=0
+
 >>--workers-num
+
 >>--model
+
 >>--epochs
+
 >>--train-bsz
-(b) 
-     > python learner.py 
-     >      --ps-ip 
-      >     --ps-port
-       >    --this-rank
-        >   --workers-num 
-         >  --model
-          > --epochs
-           >--train-bsz 
-           >--stale-threshold
+
+(b) Start a learner
+
+> python learner.py 
+
+>>      --ps-ip 
+
+>>--ps-port
+
+>>--this-rank
+
+>>--workers-num 
+
+>>--model
+
+>>--epochs
+
+>>--train-bsz 
+
+>>--stale-threshold
 
            
 
