@@ -32,7 +32,7 @@ The program is based on PyTorch 1 and Python 3.
 *(b) Start a learner*
 
 > python learner.py 
->>      --ps-ip 
+>>--ps-ip 
 >>      
 >>--ps-port
 >>
