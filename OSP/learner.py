@@ -22,19 +22,19 @@ from torchvision import datasets,models, transforms
 import ResNetOnCifar10
 
 parser = argparse.ArgumentParser()
-# 集群信息
+# Information of the cluster
 parser.add_argument('--ps-ip', type=str, default='127.0.0.1')
 parser.add_argument('--ps-port', type=str, default='29500')
 parser.add_argument('--this-rank', type=int, default=1)
 parser.add_argument('--workers-num', type=int, default=2)
 
-# 模型与数据集
+# Model and Dataset
 parser.add_argument('--data-dir', type=str, default='~/dataset')
 parser.add_argument('--data-name', type=str, default='cifar10')
 parser.add_argument('--model', type=str, default='MnistCNN')
 parser.add_argument('--save-path', type=str, default='./')
 
-# 参数信息
+# Hyper-parameters
 parser.add_argument('--epochs', type=int, default=2)
 parser.add_argument('--train-bsz', type=int, default=200)
 parser.add_argument('--stale-threshold', type=int, default=20)
@@ -85,7 +85,7 @@ def sender(model_cache, global_update, local_update, it_count,
 
 # noinspection PyTypeChecker
 def run(rank, workers, model, save_path, train_data, test_data, global_lr):
-    # 获取ps端传来的模型初始参数
+    # Get the initial model from the server
     print(workers)
 
     _group = [w for w in workers].append(0)
@@ -144,7 +144,7 @@ def run(rank, workers, model, save_path, train_data, test_data, global_lr):
         s_time = time.time()
         model.train()
 
-        # AlexNet在指定epoch减少学习率LR
+        # Decay the learning at the specific epoch
         # learning rate should be decreased on server due to unmatched updating speed between local worker and server
         if not global_lr.empty():
             g_lr = global_lr.get()
@@ -304,7 +304,7 @@ if __name__ == '__main__':
     train_data = select_dataset(workers, this_rank, train_data, batch_size=train_bsz)
     test_data = select_dataset(workers, this_rank, test_data, batch_size=test_bsz)
 
-    # 用所有的测试数据测试
+    # Test dataset
     #test_data = DataLoader(test_dataset, batch_size=test_bsz, shuffle=True)
 
     world_size = len(workers) + 1
