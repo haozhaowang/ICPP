@@ -23,18 +23,18 @@ from torchvision import datasets, models, transforms
 import ResNetOnCifar10
 
 parser = argparse.ArgumentParser()
-# 集群信息
+# Information of cluster
 parser.add_argument('--ps-ip', type=str, default='127.0.0.1')
 parser.add_argument('--ps-port', type=str, default='29500')
 parser.add_argument('--this-rank', type=int, default=1)
 parser.add_argument('--workers-num', type=int, default=2)
 
-# 模型与数据集
+# Model and Dataset
 parser.add_argument('--data-dir', type=str, default='~/dataset')
 parser.add_argument('--save-path', type=str, default='./')
 parser.add_argument('--model', type=str, default='MnistCNN')
 
-# 参数信息
+# Hyper-parameters
 parser.add_argument('--epochs', type=int, default=50)
 parser.add_argument('--train-bsz', type=int, default=200)
 parser.add_argument('--test-bsz', type=int, default=200)
@@ -46,7 +46,7 @@ args = parser.parse_args()
 
 
 def run(rank, model, train_data, test_data, queue, param_q, stop_flag):
-    # 获取ps端传来的模型初始参数
+    # Get initial model from the server
     while True:
         if not param_q.empty():
             param_dict = param_q.get()
@@ -81,7 +81,7 @@ def run(rank, model, train_data, test_data, queue, param_q, stop_flag):
         batch_push_interval = 0.0
         batch_pull_interval = 0.0
         model.train()
-        # AlexNet在指定epoch减少学习率LR
+        # Decay the learning at the specific epoch
         #if args.model == 'AlexNet':
         if (epoch+1) % decay_period == 0:
             for param_group in optimizer.param_groups:
@@ -99,7 +99,7 @@ def run(rank, model, train_data, test_data, queue, param_q, stop_flag):
 
             batch_comp_time = time.time()
             # noinspection PyBroadException
-            try:  # 捕获异常，异常来源于ps进程的停止
+            try: 
                 if delta_ws:
                     queue.put({
                         rank: [loss.data.numpy(), np.array(args.train_bsz), False]
@@ -146,7 +146,7 @@ def run(rank, model, train_data, test_data, queue, param_q, stop_flag):
         logs = torch.tensor([0.0, batch_interval, batch_comp_interval, batch_comm_interval, batch_push_interval, batch_pull_interval])
         time_logs.write(str(epoch) + '\t' + str(logs) + '\n')
         time_logs.flush()
-        # 训练结束后进行test
+        # test
         print("test Model:",epoch)
         # test_model(rank, model, test_data, criterion=criterion)
         if stop_flag.value:
@@ -175,10 +175,6 @@ def capture_stop(stop_signal, flag: Value):
 
 if __name__ == "__main__":
 
-    """
-    判断使用的模型，MnistCNN或者是AlexNet
-    模型不同，数据集、数据集处理方式、优化函数、损失函数、参数等都不一样
-    """
     if args.model == 'MnistCNN':
         model = MnistCNN()
         train_transform, test_transform = get_data_transform('mnist')
@@ -259,12 +255,12 @@ if __name__ == "__main__":
     manager = MyManager(address=(args.ps_ip, 5000), authkey=b'queue')
     manager.connect()
 
-    q = manager.get_queue()  # 更新参数使用的队列
-    param_q = manager.get_param()  # 接收初始模型参数使用的队列
-    stop_signal = manager.get_stop_signal()  # 接收停止信号使用的队列
+    q = manager.get_queue()  # update the queue storing the gradient
+    param_q = manager.get_param()  # queue receiving the initial model
+    stop_signal = manager.get_stop_signal()  # receive stop signal
 
     stop_flag = Value(c_bool, False)
-    # 开启一个进程捕获ps的stop信息
+    # monitor the stop signal
     stop_p = Process(target=capture_stop,
                      args=(stop_signal, stop_flag))
 
