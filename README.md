@@ -1,20 +1,19 @@
-# ICPP
+# Meta Information of the Code
 (1) ICPPAppendix is the full proof for ICPP 2019. 
 
 >Wang, Haozhao, Song Guo, and Ruixuan Li. "Osp: Overlapping computation and communication in parameter server for fast machine learning." Proceedings of the 48th International Conference on Parallel Processing. 2019.
 
 (2) The four file folders are the source codes for OSP and its comparison models.
 
-(3) Run the program
-# Dependency
+# Run the program
+(1)Dependency
+
 The program is based on PyTorch 1 and Python 3.
 
-# Start orders
+(2) Start orders
 
-The order of starting OSP is:
-
-(a) >python param_server.py \\
-     >      --ps-ip \\
+(a) >python param_server.py
+     >      --ps-ip
       >     --ps-port \\
        >   --this-rank=0 \\
         >   --workers-num \\
